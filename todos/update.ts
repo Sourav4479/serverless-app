@@ -1,59 +1,49 @@
 'use strict';
 
-const aws = require('aws-sdk'); // eslint-disable-line import/no-extraneous-dependencies
+import { DynamoDB } from 'aws-sdk'
 
-const dynamoDb = new aws.DynamoDB.DocumentClient();
+const dynamoDB = new DynamoDB.DocumentClient();
 
-module.exports.update = (event, context, callback) => {
+module.exports.update = async (event) => {
+  const { id, text, checked } = JSON.parse(event.body);
   const timestamp = new Date().getTime();
-  const data = JSON.parse(event.body);
-
-  // validation
-  if (typeof data.text !== 'string' || typeof data.checked !== 'boolean') {
-    console.error('Validation Failed');
-    callback(null, {
+  if(!id || !text || !checked) {
+    return {
       statusCode: 400,
-      headers: { 'Content-Type': 'text/plain' },
-      body: 'Couldn\'t update the todo item.',
-    });
-    return;
+      body: JSON.stringify({ message: 'Missing required parameters' }),
+    };
   }
-
   const params = {
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
-      id: event.pathParameters.id,
+      pk: 'TODO',
+      sk: 'TODO#' + id,
     },
+    UpdateExpression: 'set #text = :text, #checked = :checked, #updatedAt = :updatedAt',
     ExpressionAttributeNames: {
-      '#todo_text': 'text',
+      '#text': 'text',
+      '#checked': 'checked',
+      '#updatedAt': 'updatedAt',
     },
     ExpressionAttributeValues: {
-      ':text': data.text,
-      ':checked': data.checked,
+      ':text': text,
+      ':checked': checked,
       ':updatedAt': timestamp,
     },
-    UpdateExpression: 'SET #todo_text = :text, checked = :checked, updatedAt = :updatedAt',
     ReturnValues: 'ALL_NEW',
   };
-
-  // update the todo in the database
-  dynamoDb.update(params, (error, result) => {
-    // handle potential errors
-    if (error) {
-      console.error(error);
-      callback(null, {
-        statusCode: error.statusCode || 501,
-        headers: { 'Content-Type': 'text/plain' },
-        body: 'Couldn\'t fetch the todo item.',
-      });
-      return;
-    }
-
-    // create a response
-    const response = {
+  
+  try {
+    const result = await dynamoDB.update(params).promise();
+    return {
       statusCode: 200,
       body: JSON.stringify(result.Attributes),
     };
-    callback(null, response);
-  });
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Error updating TODO item' }),
+    };
+  }
 };

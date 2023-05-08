@@ -1,0 +1,14 @@
+phases:
+  install:
+    runtime-versions:
+      nodejs: 14
+    commands:
+      - npm install -g serverless
+      - npm install
+  build:
+    commands:
+      - serverless deploy
+
+cache:
+  paths:
+    - node_modules

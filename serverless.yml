@@ -40,12 +40,18 @@ functions:
       - httpApi:
           path: /todos/{id}
           method: get
+  list:
+    handler: todos/list.list
+    events:
+      - httpApi:
+          path: /todos
+          method: get
 
   update:
     handler: todos/update.update
     events:
       - httpApi:
-          path: /todos/{id}
+          path: /todos
           method: put
 
 resources:

@@ -9,13 +9,15 @@ const dynamoDb = new DynamoDB.DocumentClient()
 module.exports.create = (event, context, callback) => {
   const timestamp = new Date().getTime()
   const data = JSON.parse(event.body);
-  console.log(data)
+  console.log("Request:", data)
 
   const params = {
     TableName: process.env.DYNAMODB_TABLE,
     Item: {
       id: uuid.v1(),
-      text: data.todo_title,
+      pk: 'TODO',
+      sk: 'TODO#' + uuid.v1(),
+      text: data.title,
       checked: false,
       createdAt: timestamp,
       updatedAt: timestamp

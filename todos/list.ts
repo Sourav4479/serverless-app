@@ -2,33 +2,36 @@
 
 import { DynamoDB } from 'aws-sdk'
 
-// const dynamoDb = new DynamoDB.DocumentClient()
-// const params = {
-//   TableName: process.env.DYNAMODB_TABLE,
-// };
+const dynamoDB = new DynamoDB.DocumentClient();
 
-module.exports.list = async (event, context, callback) => {
-  // fetch all todos from the database
-  // For production workloads you should design your tables and indexes so that your applications can use Query instead of Scan.
-  // dynamoDb.scan(params, (error, result) => {
-  //   // handle potential errors
-  //   if (error) {
-  //     console.error(error);
-  //     callback(null, {
-  //       statusCode: error.statusCode || 501,
-  //       headers: { 'Content-Type': 'text/plain' },
-  //       body: 'Couldn\'t fetch the todo items.',
-  //     });
-  //     return;
-  //   }
-  // let client = (await db_connect).db().databaseName
-  const response = {
-    statusCode: 200,
-    // body: JSON.stringify({'client'}),
+module.exports.list = async (event, context) => {
+  const params = {
+    TableName: process.env.DYNAMODB_TABLE,
+    KeyConditionExpression: 'pk = :pk',
+    ExpressionAttributeValues: {
+      ':pk': "TODO"
+    }
   };
-  callback(null, response);
-    // create a response
+
+  try {
+    const data = await dynamoDB.query(params).promise();
+    const todos = data.Items;
     
-  
-  };
-
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Todos retrieved successfully',
+        todos: todos
+      })
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        message: 'Error retrieving Todos',
+        error: err
+      })
+    };
+  }
+};

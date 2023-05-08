@@ -1,51 +1,49 @@
 'use strict';
 
+import { DynamoDB } from 'aws-sdk'
 
+const dynamoDb = new DynamoDB.DocumentClient()
+const dynamodb = new DynamoDB();
 
-
-
-
-
-
-// import { DynamoDB } from 'aws-sdk'
-
-// const dynamoDb = new DynamoDB.DocumentClient()
-
-
-module.exports.get = async(event, context, callback) => {
-  
+module.exports.get = async (event) => {
+  const todoId = event.pathParameters.id;
+console.log(todoId);
   const params = {
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
-      id: event.pathParameters.id,
-    },
+      'pk': { S: 'TODO' },
+      'sk': { S: 'TODO#' + todoId }
+    }
   };
-  // let client = (await db_connect).
-  // let client = (await db_connect).db().databaseName
-  const response = {
-    statusCode: 200,
-    // body: JSON.stringify({'client'}),
-  };
-  callback(null, response);
 
-  // fetch todo from the database
-  // dynamoDb.get(params, (error, result) => {
-  //   // handle potential errors
-  //   if (error) {
-  //     console.error(error);
-  //     callback(null, {
-  //       statusCode: error.statusCode || 501,
-  //       headers: { 'Content-Type': 'text/plain' },
-  //       body: 'Couldn\'t fetch the todo item.',
-  //     });
-  //     return;
-  //   }
+  try {
+    const result = await dynamodb.getItem(params).promise();
+    if (!result.Item) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: 'Todo item not found' })
+      };
+    }
 
-  //   // create a response
-  //   const response = {
-  //     statusCode: 200,
-  //     body: JSON.stringify(result.Item),
-  //   };
-  //   callback(null, response);
-  // });
+    const todo = {
+      id: result.Item.id.S,
+      pk: result.Item.pk.S,
+      sk: result.Item.sk.S,
+      text: result.Item.text.S,
+      checked: result.Item.checked.BOOL,
+      createdAt: result.Item.createdAt.N,
+      updatedAt: result.Item.updatedAt.N
+    };
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify(todo)
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Error retrieving todo item' })
+    };
+  }
 };
