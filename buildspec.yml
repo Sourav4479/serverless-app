@@ -4,7 +4,7 @@ phases:
     runtime-versions:
       nodejs: 16
     commands:
-      - npm install -g serverless@3.30.1
+      - npm install -g serverless
       - npm install
       - sls -v
   build:

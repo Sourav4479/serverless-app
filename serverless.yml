@@ -1,7 +1,7 @@
 org: ganguly7002665167
 app: serverless
 service: serverless
-frameworkVersion: '3'
+frameworkVersion: '2'
 plugins:
   - serverless-offline
   - serverless-plugin-typescript
