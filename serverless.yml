@@ -1,4 +1,4 @@
-org: ganguly7002665167
+# org: ganguly7002665167
 app: serverless
 service: serverless
 frameworkVersion: '2'
