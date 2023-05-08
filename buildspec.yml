@@ -10,7 +10,7 @@ phases:
   build:
     commands:
       - aws configure set aws_access_key_id $ACCESS_KEY_ID --profile $AWS_PROFILE_NAME && aws configure set aws_secret_access_key $AWS_SECRET_KEY_ID --profile $AWS_PROFILE_NAME && aws configure set region $AWS_REGION --profile $AWS_PROFILE_NAME && aws configure set output $OUTPUT_FORMAT --profile $AWS_PROFILE_NAME
-      - serverless deploy --stage dev --profile $AWS_PROFILE_NAME
+      - serverless deploy --stage dev --aws-profile $AWS_PROFILE_NAME
 
 cache:
   paths:
