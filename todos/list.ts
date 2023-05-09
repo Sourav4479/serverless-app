@@ -16,13 +16,17 @@ module.exports.list = async (event, context) => {
   try {
     const data = await dynamoDB.query(params).promise();
     const todos = data.Items;
-    
+    const responseData =  todos.map((value)=> {
+      return {
+        userId : 1,
+        id: value.id,
+        title: value.text,
+        completed: value.checked
+      }
+    });
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        message: 'Todos retrieved successfully',
-        todos: todos
-      })
+      body: JSON.stringify(responseData)
     };
   } catch (err) {
     console.log(err);
